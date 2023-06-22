@@ -1,0 +1,9 @@
+sku,planning_level,lead_time_in_days,minimum_order_quantity,cost_of_goods_sold
+Pot1,Pots,30,25,10
+Pot2,Pots,15,50,35
+Pot3,Pots,30,50,15
+Pot4,Pots,45,25,20
+Pan1,Pans,45,25,40
+Pan2,Pans,30,25,25
+Pan3,Pans,15,25,5
+Pan4,Pans,15,50,30
