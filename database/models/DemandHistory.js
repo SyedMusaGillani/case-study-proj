@@ -8,8 +8,14 @@ module.exports = (sequelize, DataTypes) => {
     },
     {
       freezeTableName: true,
+      timestamps: false,
     }
   );
-
+  demand_history.associate = (models) => {
+    demand_history.belongsTo(models.sku_mapping, {
+      foreignKey: "sku",
+      targetKey: "sku",
+    });
+  };
   return demand_history;
 };

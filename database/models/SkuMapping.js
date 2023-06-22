@@ -10,8 +10,15 @@ module.exports = (sequelize, DataTypes) => {
     },
     {
       freezeTableName: true,
+      timestamps: false,
     }
   );
 
+  sku_mapping.associate = (models) => {
+    sku_mapping.hasMany(models.demand_history, {
+      foreignKey: "sku",
+      sourceKey: "sku",
+    });
+  };
   return sku_mapping;
 };
