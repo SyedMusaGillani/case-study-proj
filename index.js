@@ -1,6 +1,8 @@
 const dayjs = require("dayjs");
 const db = require("./database/models/index");
 const { saveConsoleTableToCsv } = require("./utils/writer");
+const { insertOrderSimsData } = require("./utils/insertOrderSims");
+const { insertMatchListsData } = require("./utils/insertMatchLists");
 
 const Task1 = async () => {
   const date = await db.demand_history.findAll({
@@ -117,6 +119,7 @@ const Task1 = async () => {
   });
 
   await saveConsoleTableToCsv(orderSIMOutput, "Task1.csv");
+  await insertOrderSimsData(db.sequelize.getQueryInterface());
 };
 
 const Task2 = async () => {
@@ -140,6 +143,7 @@ const Task2 = async () => {
     { type: db.Sequelize.QueryTypes.SELECT }
   );
   await saveConsoleTableToCsv(data, "Task2.csv");
+  await insertMatchListsData(db.sequelize.getQueryInterface());
 };
 
 async function main() {

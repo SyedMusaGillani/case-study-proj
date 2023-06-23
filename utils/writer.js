@@ -15,7 +15,6 @@ module.exports = {
         Object.entries(row).forEach(([key, value]) => {
           if (key.includes("datetime")) {
             const val = checkAndConvertDateFormat(value);
-            console.log(key, val);
             csvRow[key] = val;
           } else csvRow[key] = value;
         });
