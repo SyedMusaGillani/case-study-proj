@@ -1,5 +1,6 @@
 const dayjs = require("dayjs");
 const db = require("./database/models/index");
+const { saveConsoleTableToCsv } = require("./writer");
 
 const Task1 = async () => {
   const date = await db.demand_history.findAll({
@@ -114,7 +115,8 @@ const Task1 = async () => {
       });
     }
   });
-  console.table(orderSIMOutput);
+
+  await saveConsoleTableToCsv(orderSIMOutput, "output.csv");
 };
 
 async function main() {
