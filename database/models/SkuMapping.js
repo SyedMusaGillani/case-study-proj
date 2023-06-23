@@ -19,6 +19,10 @@ module.exports = (sequelize, DataTypes) => {
       foreignKey: "sku",
       sourceKey: "sku",
     });
+    sku_mapping.belongsTo(models.sales_forecast, {
+      foreignKey: "planning_level",
+      targetKey: "planning_level",
+    });
   };
   return sku_mapping;
 };

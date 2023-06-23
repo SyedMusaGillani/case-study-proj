@@ -11,7 +11,7 @@ const Task1 = async () => {
   });
   const specificDatetime = new Date(date[0].order_placed_datetime);
 
-  const data = await db.demand_history.findAll({
+  const forecastWithSkuNumbersForEachMonth = await db.demand_history.findAll({
     where: {
       order_placed_datetime: {
         [db.Sequelize.Op.gte]: db.Sequelize.literal(
@@ -19,18 +19,38 @@ const Task1 = async () => {
         ),
       },
     },
+    attributes: [
+      "demand_history.sku",
+      [
+        db.Sequelize.fn("COUNT", db.Sequelize.col("demand_history.sku")),
+        "count",
+      ],
+    ],
+    group: [
+      ["demand_history.sku"],
+      ["sku_mapping.planning_level"],
+      ["sku_mapping.sales_forecast.month"],
+      ["sku_mapping.sales_forecast.id"],
+    ],
+    order: [[db.sku_mapping, db.sales_forecast, "month", "ASC"]],
     raw: true,
     nested: true,
     include: [
       {
         model: db.sku_mapping,
-        attributes: { exclude: ["sku"] },
+        attributes: ["planning_level"],
         required: true,
+        include: [
+          {
+            model: db.sales_forecast,
+            attributes: ["month"],
+            required: true,
+          },
+        ],
       },
     ],
   });
-  console.table(data);
-  console.log("total number of records", data.length);
+  console.table(forecastWithSkuNumbersForEachMonth);
 };
 
 async function main() {
