@@ -1,6 +1,7 @@
 const fs = require("fs");
 const path = require("path");
 const { createObjectCsvWriter } = require("csv-writer");
+const { checkAndConvertDateFormat } = require("./dateFormat");
 
 module.exports = {
   async saveConsoleTableToCsv(tableData, filePath) {
@@ -12,7 +13,11 @@ module.exports = {
       const csvData = tableData.map((row) => {
         const csvRow = {};
         Object.entries(row).forEach(([key, value]) => {
-          csvRow[key] = value;
+          if (key.includes("datetime")) {
+            const val = checkAndConvertDateFormat(value);
+            console.log(key, val);
+            csvRow[key] = val;
+          } else csvRow[key] = value;
         });
         return csvRow;
       });

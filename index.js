@@ -119,9 +119,33 @@ const Task1 = async () => {
   await saveConsoleTableToCsv(orderSIMOutput, "Task1.csv");
 };
 
+const Task2 = async () => {
+  const data = await db.sequelize.query(
+    `
+  SELECT o."orderId", i.inventory_id, o.sku, o.order_placed_datetime,
+    i.warehouse_arrival_datetime
+    FROM order_sims o
+    JOIN inventory_on_hand i ON o.sku = i.sku
+    WHERE o.order_placed_datetime = (
+      SELECT MIN(order_placed_datetime)
+      FROM order_sims
+      WHERE sku = o.sku
+    )
+    AND i.warehouse_arrival_datetime = (
+      SELECT MIN(warehouse_arrival_datetime)
+      FROM inventory_on_hand
+      WHERE sku = i.sku
+    );
+`,
+    { type: db.Sequelize.QueryTypes.SELECT }
+  );
+  await saveConsoleTableToCsv(data, "Task2.csv");
+};
+
 async function main() {
   console.clear();
   await Task1();
+  await Task2();
 }
 
 main()
