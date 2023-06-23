@@ -33,7 +33,10 @@ const Task1 = async () => {
       ["sku_mapping.sales_forecast.month"],
       ["sku_mapping.sales_forecast.id"],
     ],
-    order: [[db.sku_mapping, db.sales_forecast, "month", "ASC"]],
+    order: [
+      [db.sku_mapping, db.sales_forecast, "month", "ASC"],
+      ["sku", "ASC"],
+    ],
     raw: true,
     nested: true,
     include: [
@@ -66,27 +69,56 @@ const Task1 = async () => {
   const ordersPerDay = {};
   Object.entries(totalOrdersEachMonth).forEach(([month, orders]) => {
     const { days } = months.find((m) => m.month === month);
-    if (!ordersPerDay[month]) ordersPerDay[month] = 0;
-    ordersPerDay[month] += parseFloat((orders / days).toFixed(2));
+    if (!ordersPerDay[month]) ordersPerDay[month] = { dayOrders: 0 };
+    ordersPerDay[month]["dayOrders"] += orders / days;
+    ordersPerDay[month]["totalOrders"] = orders;
   });
 
   const dateTimes = {};
-  Object.entries(ordersPerDay).forEach(([month, dayOrders]) => {
-    if (!dateTimes[month]) dateTimes[month] = [];
-    const orderInterval = parseInt((24 / dayOrders).toFixed(2));
-    const startDate = dayjs(month).startOf("month");
-    const endDate = dayjs(month).endOf("month");
-    let currentDatetime = startDate;
+  Object.entries(ordersPerDay).forEach(
+    ([month, { dayOrders, totalOrders }]) => {
+      if (!dateTimes[month]) dateTimes[month] = [];
+      let orderCount = 0;
+      const orderInterval = 24 / dayOrders;
+      const startDate = dayjs(month).startOf("month");
+      const endDate = dayjs(month).endOf("month");
+      let currentDatetime = startDate;
 
-    while (currentDatetime.isBefore(endDate)) {
-      dateTimes[month].push(currentDatetime.toDate());
+      while (currentDatetime.isBefore(endDate) && orderCount < totalOrders) {
+        dateTimes[month].push(currentDatetime.format("MM-DD-YYYY HH:mm:ss"));
+        currentDatetime = currentDatetime.add(orderInterval, "hour");
+        orderCount++;
+      }
+      while (orderCount < totalOrders) {
+        dateTimes[month].push(currentDatetime.format("MM-DD-YYYY HH:mm:ss"));
+        currentDatetime = currentDatetime.add(1, "hour");
+        orderCount++;
+      }
+    }
+  );
 
-      currentDatetime = currentDatetime.add(orderInterval, "hour");
+  const orderSIMOutput = [];
+  const orderPrefix = "orderSIM";
+  forecastWithSkuNumbersForEachMonth.forEach((forecast, index) => {
+    let dateTimesCount = 0;
+    const count = parseInt(forecast.count);
+    const month = forecast["sku_mapping.sales_forecast.month"];
+    for (let i = 0; i < count; i++, dateTimesCount++) {
+      const sku = forecast.sku;
+      const orderId = `${orderPrefix}${dateTimesCount + 1}`;
+      const order_placed_datetime = dateTimes[month].at(dateTimesCount);
+      orderSIMOutput.push({
+        sku,
+        orderId,
+        order_placed_datetime,
+      });
     }
   });
+  console.table(orderSIMOutput);
 };
 
 async function main() {
+  console.clear();
   await Task1();
 }
 
